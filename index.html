@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Operation Solver</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Sliding Banner Styles */
+        .banner {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            background-color: #ffeb3b;
+            color: #000;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: left 0.5s ease-in-out;
+        }
+
+        .banner.active {
+            left: 0;
+        }
+
+        .banner .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .container {
+            background-color: yellow;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 90%;
+            margin: 60px auto 20px; /* Adjusted for banner height */
+            border-radius: 10px;
+            overflow: hidden; /* Prevents horizontal overflow */
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+
+        .table-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            gap: 20px;
+        }
+
+        .table-container > div {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-container > div h2 {
+            margin-top: 0;
+            color: #555555;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555555;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            width: calc(100% - 20px); /* Adjusted for padding */
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: calc(100% - 20px); /* Adjusted for padding */
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 0; /* Adjusted padding */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 10px auto;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .result {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 100px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            color: rgba(3, 5, 0, 0.1);
+            pointer-events: none;
+            z-index: 1;
+            text-shadow: 2px 2px 4px rgba(0.1, 0.1, 0, 0.06);
+            letter-spacing: 5px;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100%;
+                border-radius: 0;
+                padding: 10px;
+            }
+
+            input[type="number"],
+            input[type="text"],
+            button {
+                width: 100%;
+            }
+
+            .table-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Footer Styles */
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        footer h2 {
+            margin: 0;
+        }
+
+        footer p {
+            margin: 10px 0;
+        }
+
+        footer a {
+            color: #4caf50;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.9.0/math.min.js"></script>
+</head>
+<body>
+    <!-- Sliding Banner -->
+    <div class="banner" id="banner">
+        <span class="close" onclick="closeBanner()">&times;</span>
+        <p>Important update: This site is undergoing maintenance from 12:00 AM to 2:00 AM.</p>
+    </div>
+
+    <div class="watermark">v</div>
+
+    <div class="container">
+        <h1>Math Operation Solver</h1>
+
+        <div class="table-container">
+            <!-- Variables Section -->
+            <div>
+                <h2>Variables</h2>
+                <label for="numVariables">Enter number of variables:</label>
+                <input type="number" id="numVariables">
+                <button onclick="createInputFields()">Submit</button>
+                <div id="variables"></div>
+            </div>
+
+            <!-- Functions Section -->
+            <div>
+                <h2>Functions</h2>
+                <label for="numFunctions">Enter number of functions:</label>
+                <input type="number" id="numFunctions">
+                <button onclick="createFunctionFields()">Submit</button>
+                <div id="equations"></div>
+            </div>
+
+            <!-- Results Section -->
+            <div>
+                <h2>Results</h2>
+                <button onclick="solve()">Solve</button>
+                <button onclick="reset()">Reset</button>
+                <div id="result" class="result"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <h2>About This Tool</h2>
+        <p>This Math Operation Solver allows you to evaluate mathematical expressions with user-defined variables and functions. It supports basic arithmetic, trigonometric functions (sin, cos, tan) with angles in degrees, and complex expressions.</p>
+        
+        <h2>Contact Us</h2>
+        <p>If you have any questions or feedback, please contact us at <a href="https://mail.google.com/mail/?view=cm&fs=1&to=mailofvyshnav@gmail.com" target="_blank">mailofvyshnav@gmail.com</a>.</p>
+    </footer>
+
+    <script>
+        var variables = [];
+        var functionNames = [];
+        var equations = [];
+
+        function createInputFields() {
+            var numVariables = document.getElementById("numVariables").value;
+            var variablesDiv = document.getElementById("variables");
+            variablesDiv.innerHTML = "";
+
+            // Generate automatic variable names
+            variables = [];
+            for (var i = 0; i < numVariables; i++) {
+                variables.push(String.fromCharCode(97 + i)); // a, b, c, ...
+            }
+
+            for (var i = 0; i < variables.length; i++) {
+                variablesDiv.innerHTML += `<label for="variable${i}">Enter value for variable ${variables[i]}:</label>
+                                            <input type="number" id="variable${i}" class="variable-input"><br>`;
+            }
+
+            // Add event listeners to input fields
+            addEnterKeyListener('.variable-input');
+        }
+
+        function createFunctionFields() {
+            var numFunctions = document.getElementById("numFunctions").value;
+            var equationsDiv = document.getElementById("equations");
+            equationsDiv.innerHTML = "<h3>Equations for Functions:</h3>";
+            equationsDiv.innerHTML += "<p>Write the equations using the variable names provided above (e.g., a, b, c, ...). Use 'sin', 'cos', or 'tan' for trigonometric functions. Note that angles should be in degrees. Use 'sqrt' for square root and '^' for exponentiation. Functions can be used as variables (e.g., use 'f1' for the first function).</p>";
+       
+            functionNames = [];
+            for (var i = 0; i < numFunctions; i++) {
+                functionNames.push(`f${i + 1}`); // f1, f2, f3, ...
+            }
+
+            for (var i = 0; i < numFunctions; i++) {
+                var equationInput = document.createElement("input");
+                equationInput.type = "text";
+                equationInput.className = "equation-input";
+                equationInput.placeholder = `Enter equation for function ${i + 1} (use variable names and functions like f1, f2, etc.)`;
+                equationsDiv.appendChild(equationInput);
+                equationsDiv.appendChild(document.createElement("br"));
+            }
+
+            // Add event listeners to input fields
+            addEnterKeyListener('.equation-input');
+        }
+
+        function solve() {
+            var variableValues = [];
+            var variableInputs = document.querySelectorAll(".variable-input");
+            variableInputs.forEach(function(input) {
+                variableValues.push(parseFloat(input.value));
+            });
+
+            var equationsInputs = document.querySelectorAll(".equation-input");
+            equations = [];
+            equationsInputs.forEach(function(input) {
+                equations.push(input.value);
+            });
+
+            var resultDiv = document.getElementById("result");
+            resultDiv.innerHTML = "";
+
+            // Store function results
+            var functionResults = {};
+
+            // Compute each function
+            for (var i = 0; i < equations.length; i++) {
+                var equation = equations[i];
+                var result = evaluateEquation(equation, variableValues, functionResults);
+                functionResults[functionNames[i]] = result;
+                resultDiv.innerHTML += `Result of function ${functionNames[i]}: ${result}<br>`;
+            }
+        }
+
+        function evaluateEquation(equation, variableValues, functionResults) {
+            try {
+                // Replace variables in the equation with their values
+                variables.forEach((variable, index) => {
+                    equation = equation.replace(new RegExp(`\\b${variable}\\b`, 'g'), variableValues[index]);
+                });
+
+                // Replace functions in the equation with their results
+                for (var funcName in functionResults) {
+                    var funcValue = functionResults[funcName];
+                    equation = equation.replace(new RegExp(`\\b${funcName}\\b`, 'g'), funcValue);
+                }
+
+                // Handle degree to radian conversion for trigonometric functions
+                equation = equation.replace(/(sin|cos|tan)\(([^)]+)\)/g, (match, p1, p2) => {
+                    return `(${p1}(${p2} * pi / 180))`;
+                });
+
+                // Evaluate the equation using math.js
+                var result = math.evaluate(equation);
+
+                // Round the result to 10 decimal places
+                return roundToPrecision(result, 10);
+            } catch (error) {
+                return `Error: ${error.message}`;
+            }
+        }
+
+        function roundToPrecision(num, precision) {
+            if (typeof num !== 'number') return num;
+            return parseFloat(num.toFixed(precision));
+        }
+
+        function reset() {
+            document.getElementById("numVariables").value = "";
+            document.getElementById("variables").innerHTML = "";
+            document.getElementById("numFunctions").value = "";
+            document.getElementById("equations").innerHTML = "";
+            document.getElementById("result").innerHTML = "";
+        }
+
+        // Add event listener for the Enter key to inputs
+        function addEnterKeyListener(selector) {
+            var inputs = document.querySelectorAll(selector);
+            inputs.forEach(function(input) {
+                input.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault(); // Prevent default action
+                        var nextInput = getNextInput(input);
+                        if (nextInput) {
+                            nextInput.focus();
+                        } else {
+                            // Optionally, you can submit the form or move focus to a button
+                            // document.querySelector('button').focus();
+                        }
+                    }
+                });
+            });
+        }
+
+        function getNextInput(currentInput) {
+            var inputs = Array.from(document.querySelectorAll('input[type="number"], input[type="text"]'));
+            var currentIndex = inputs.indexOf(currentInput);
+            return inputs[currentIndex + 1] || null;
+        }
+
+        function closeBanner() {
+            var banner = document.getElementById("banner");
+            banner.classList.remove("active");
+        }
+
+        // Show the banner on page load
+        window.onload = function() {
+            var banner = document.getElementById("banner");
+            setTimeout(function() {
+                banner.classList.add("active");
+            }, 500); // Delay to allow smooth slide in
+        };
+    </script>
+</body>
+</html>
+
